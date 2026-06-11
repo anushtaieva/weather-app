@@ -1,0 +1,19 @@
+{
+  "weather": "Weather",
+  "favorites": "Favorites",
+  "dashboard": "Weather Dashboard",
+  "today": "Today",
+  "fiveDays": "5 Days",
+  "feelsLike": "Feels like",
+  "humidity": "Humidity",
+  "wind": "Wind",
+  "pressure": "Pressure",
+  "deleteWeatherBlock": "Delete weather block?",
+  "delete": "Delete",
+  "cancel": "Cancel",
+  "loading": "Loading...",
+  "selectCity": "Select city",
+  "favoriteLimit": "To add a new city, remove one city from favorites because the maximum is 5.",
+  "favoriteAdd": "Add to favorites",
+  "favoriteAdded": "In favorites"
+}

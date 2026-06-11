@@ -3,7 +3,7 @@
     <input
       v-model="query"
       @input="handleInput"
-      placeholder="Enter city"
+      :placeholder="$t('selectCity')"
     />
 
     <ul
@@ -26,6 +26,7 @@
 <script setup>
 import { ref } from 'vue'
 import { searchCities } from '../api/weatherApi'
+import { useI18n } from 'vue-i18n'
 
 const emit = defineEmits(['select'])
 
@@ -63,28 +64,90 @@ const selectCity = city => {
 <style scoped>
 .autocomplete {
   position: relative;
+  z-index: 8;
 }
 
 input {
   width: 100%;
-  padding: 10px;
+  min-height: 50px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  outline: none;
+  padding: 0 18px 0 46px;
+  color: var(--text-main);
+  background:
+    linear-gradient(var(--surface-strong), var(--surface-strong)) padding-box,
+    linear-gradient(135deg, rgba(255, 158, 199, 0.7), rgba(128, 216, 255, 0.7)) border-box;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 10px 24px rgba(92, 75, 120, 0.08);
+  font-weight: 800;
+  transition: box-shadow var(--transition), border-color var(--transition);
+}
+
+.autocomplete::before {
+  content: '🔎';
+  position: absolute;
+  left: 18px;
+  top: 14px;
+  z-index: 1;
+}
+
+input::placeholder {
+  color: var(--text-soft);
+}
+
+input:focus {
+  box-shadow: 0 0 0 5px rgba(255, 158, 199, 0.2), 0 12px 28px rgba(92, 75, 120, 0.12);
 }
 
 .suggestions {
   position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
   width: 100%;
-  background: white;
-  border: 1px solid #ddd;
+  max-height: 260px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 8px;
   list-style: none;
-  z-index: 10;
+  background: var(--surface-strong);
+  box-shadow: 0 20px 50px rgba(48, 38, 71, 0.2);
+  backdrop-filter: blur(16px);
 }
 
 .suggestions li {
-  padding: 10px;
+  border-radius: 16px;
+  padding: 12px 14px;
+  color: var(--text-main);
+  font-weight: 800;
   cursor: pointer;
 }
 
 .suggestions li:hover {
-  background: #f3f3f3;
+  background: linear-gradient(135deg, rgba(255, 158, 199, 0.18), rgba(128, 216, 255, 0.18));
+}
+</style>
+<style scoped>
+@media (max-width: 520px) {
+  input {
+    min-height: 46px;
+    padding: 0 14px 0 42px;
+    font-size: 15px;
+  }
+
+  .autocomplete::before {
+    left: 15px;
+    top: 12px;
+  }
+
+  .suggestions {
+    max-height: 220px;
+    border-radius: 18px;
+  }
+
+  .suggestions li {
+    padding: 11px 12px;
+    font-size: 14px;
+  }
 }
 </style>

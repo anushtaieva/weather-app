@@ -16,24 +16,38 @@ export const searchCities = (query) => {
   })
 }
 
-export const getCurrentWeather = (lat, lon) => {
+export const getCurrentWeather = (
+  lat,
+  lon,
+  lang = 'uk'
+) => {
   return weatherApi.get('/data/2.5/weather', {
     params: {
       lat,
       lon,
       units: 'metric',
+      lang,
       appid: API_KEY
     }
   })
 }
 
-export const getForecast = (lat, lon) => {
+export const getForecast = (
+  lat,
+  lon,
+  lang = 'uk'
+) => {
   return weatherApi.get('/data/2.5/forecast', {
     params: {
       lat,
       lon,
       units: 'metric',
+      lang,
       appid: API_KEY
     }
   })
+}
+
+export const getUserLocationByIp = () => {
+  return axios.get('https://ipapi.co/json/')
 }
