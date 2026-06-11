@@ -1,7 +1,7 @@
 # Weather Dashboard
 
 Weather Dashboard is a responsive weather application built with Vue 3 and OpenWeather API.
-
+DEPLOYED PROJECT IS AVAILABLE VIA LINK https://weather-app-rho-one-79.vercel.app
 ## Features
 
 ### Weather
