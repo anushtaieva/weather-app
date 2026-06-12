@@ -1,5 +1,6 @@
 <template>
   <div class="loader">
+    //блок, який за допомогою css перетворюється на коло, що крутиться
     <div class="spinner"></div>
     <span>Loading...</span>
   </div>

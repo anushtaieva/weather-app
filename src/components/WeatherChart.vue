@@ -1,3 +1,4 @@
+//контейнер для графіка + зберігаємо його в компонент chartRef
 <template>
   <canvas ref="chartRef"></canvas>
 </template>
@@ -9,24 +10,30 @@ import {
   ref
 } from 'vue'
 
+//під'єднуємо бібліотеку chart.js
 import Chart from 'chart.js/auto'
 
+//отримуємо підписи для вісей
 const props = defineProps({
   labels: Array,
   temperatures: Array
 })
 
+//створюємо компонент для зберігання графіка, поки що зі значенням null
 const chartRef = ref(null)
-
 let chart = null
 
+
+//функція побудови графіка
 const renderChart = () => {
   if (!chartRef.value) return
 
+  //перевірка чи є старий графік і видалення його
   if (chart) {
     chart.destroy()
   }
 
+  //створення нового графіка
   chart = new Chart(chartRef.value, {
     type: 'line',
 
@@ -90,8 +97,10 @@ const renderChart = () => {
   })
 }
 
+//будуємо графік, коли з'явився компонент
 onMounted(renderChart)
 
+//слідкуємо за змінами температур
 watch(
   () => props.temperatures,
   renderChart

@@ -1,3 +1,4 @@
+<!-- шаблон для обраного -->
 <template>
   <div>
     <h1>{{ $t('favorites') }}</h1>
@@ -21,6 +22,7 @@ import {
   useFavorites
 } from '../composables/useFavorites'
 
+//отримуємо список обраних
 const { favorites } =
   useFavorites()
 </script>

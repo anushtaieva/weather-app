@@ -1,5 +1,6 @@
 <template>
   <div class="weather-block">
+    <!-- кнопка для видалення -->
     <button
       v-if="showDelete"
       class="delete-btn"
@@ -8,11 +9,16 @@
       ×
     </button>
 
+    <!-- поле пошуку міста 
+     якщо місто вибране, то визивається функція завантаження погоди
+     не показується у вибранному
+     -->
     <CityAutocomplete
       v-if="!favoriteCity"
       @select="city => loadWeather(city, true)"
     />
 
+    <!-- перемикач режиму (сьогодні/5 днів) -->
     <div class="view-switcher">
       <button
         :class="{ active: viewMode === 'day' }"
@@ -29,8 +35,10 @@
       </button>
     </div>
 
+    <!-- показ анімації завантаження  -->
     <Loader v-if="loading" />
 
+    <!-- показ пустого стану, якщо нема ні погоди, ні завантаження -->
     <div
       v-if="!weather && !loading"
       class="empty-state"
@@ -38,6 +46,7 @@
       {{ $t('selectCity') }}
     </div>
 
+    <!-- картка погоди відображається лише коли отримані всі данні -->
     <div
       v-if="weather"
       class="weather-card"
@@ -59,6 +68,7 @@
 
       <div class="temperature-row">
         <div class="temperature">
+          <!-- розраховуємо температуру залежно від моду: 1 день або 5 днів   -->
           {{
             viewMode === 'day'
               ? Math.round(weather.main.temp)
@@ -66,6 +76,7 @@
           }}°
         </div>
 
+        <!-- додавання міста в обране -->
         <div class="weather-actions">
           <button
             class="favorite-btn"
@@ -83,6 +94,7 @@
         </div>
       </div>
 
+      <!-- інформація про погоду -->
       <div class="weather-info">
         <div class="info-item">
           <span>{{ $t('feelsLike') }}</span>
@@ -106,6 +118,7 @@
       </div>
     </div>
 
+    <!-- графік -->
     <WeatherChart
       v-if="forecast.length"
       :labels="viewMode === 'day' ? chartLabels : weekLabels"
@@ -113,7 +126,9 @@
     />
   </div>
 
+  <!-- перенесення модального вікна в body, щоб воно показувалося поверх всієї апки -->
   <Teleport to="body">
+    <!-- показуємо модалку, якщо користувач намагається додати більше 5 міст у вибране -->
     <div
       v-if="showFavoriteLimitModal"
       class="modal-overlay"
@@ -136,28 +151,36 @@
 </template>
 
 <script setup>
+//імпорт інструментів Vue
 import {
-  computed,
-  ref,
-  onMounted,
-  watch
+  computed, //значення, що обчислюються
+  ref, //реактивні змінні
+  onMounted, //код після появи компонента
+  watch //стеження за змінними
 } from 'vue'
 
+//імпорт локалізації
 import { useI18n } from 'vue-i18n'
 
+//імпорт компонент пошука міста
 import CityAutocomplete from './CityAutocomplete.vue'
+//імпорт компонент графіка
 import WeatherChart from './WeatherChart.vue'
+//імпорт компонент завантаження
 import Loader from './Loader.vue'
 
+//імпорт функцій для запросів к серверу
 import {
   getCurrentWeather,
   getForecast
 } from '../api/weatherApi'
 
+//імпорт для обраного
 import {
   useFavorites
 } from '../composables/useFavorites'
 
+//опис пропсів (даних, які компонент отримує від батьківського елемента)
 const props = defineProps({
   blockId: {
     type: String,
@@ -180,44 +203,53 @@ const props = defineProps({
   }
 })
 
+//об'явлення подій, які компонент може надсилати батьківському елементу 
 const emit = defineEmits([
   'remove',
   'city-change'
 ])
-
+//отримання поточної мови інтерфейсу
 const { locale } = useI18n()
 
+//отримання функцій для роботи з обраним
 const {
   addFavorite,
   removeFavorite,
   isFavorite
 } = useFavorites()
 
+//об'явлення початкових станів
 const forecast = ref([])
 const weather = ref(null)
 const loading = ref(false)
 const viewMode = ref('day')
 const showFavoriteLimitModal = ref(false)
 
+//обчислюємо URL іконки погоди
 const iconUrl = computed(() => {
   if (!weather.value) return ''
 
   return `https://openweathermap.org/img/wn/${weather.value.weather[0].icon}@2x.png`
 })
 
+//головна функція завантаження погоди
 const loadWeather = async (city, shouldSave = true) => {
   try {
+    //вмикаємо завантаження
     loading.value = true
 
+    // надсилаємо одночасно два запроси на сервер (для поточної погоди та для погоди на п'ять днів)
     const [weatherResponse, forecastResponse] =
       await Promise.all([
         getCurrentWeather(city.lat, city.lon, locale.value),
         getForecast(city.lat, city.lon, locale.value)
       ])
 
+    //зберігаємо отримані дані
     weather.value = weatherResponse.data
     forecast.value = forecastResponse.data.list
 
+    //логіка захисту від дублів в блоках міст та в обраному
     if (shouldSave && !props.favoriteCity) {
       emit('city-change', {
         blockId: props.blockId,
@@ -228,13 +260,16 @@ const loadWeather = async (city, shouldSave = true) => {
         }
       })
     }
+    // ловимо помилки запитів
   } catch (error) {
     console.error(error)
+    // в будь-якому разі вимикаємо завантаження 
   } finally {
     loading.value = false
   }
 }
 
+//для завантаження блока з погодою (перевірка, чи є місто, що завантажувати (для обраного та міста користувача по айпі))
 onMounted(async () => {
   const city = props.favoriteCity || props.defaultCity
 
@@ -243,6 +278,7 @@ onMounted(async () => {
   await loadWeather(city, false)
 })
 
+//спостереження за зміною дефолтного міста (потрібно, оскільки місто за айпі надходить не одразу)
 watch(
   () => props.defaultCity,
   async city => {
@@ -252,6 +288,7 @@ watch(
   }
 )
 
+//функція додавання в обране
 const toggleFavorite = () => {
   if (!weather.value) return
 
@@ -273,6 +310,7 @@ const toggleFavorite = () => {
   }
 }
 
+//дані для графіка погоди на сьогодні
 const chartLabels = computed(() => {
   return forecast.value
     .slice(0, 8)
@@ -280,7 +318,6 @@ const chartLabels = computed(() => {
       item.dt_txt.split(' ')[1].slice(0, 5)
     )
 })
-
 const chartTemps = computed(() => {
   return forecast.value
     .slice(0, 8)
@@ -288,7 +325,7 @@ const chartTemps = computed(() => {
       Math.round(item.main.temp)
     )
 })
-
+//дані для графіка погоди на 5 днів
 const weekData = computed(() => {
   const grouped = {}
 
@@ -323,6 +360,7 @@ const weekTemps = computed(() =>
 )
 </script>
 
+//стилі
 <style scoped>
 .weather-block {
   position: relative;

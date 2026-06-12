@@ -1,3 +1,4 @@
+<!-- створюємо контейнер головної страниці -->
 <template>
   <div class="page">
     <div class="toolbar">
@@ -52,8 +53,10 @@
 
 <script setup>
 
+// під'єднуємо компонент погодної картки
 import WeatherBlock from '../components/WeatherBlock.vue'
 
+// імпорт функцій для визначення міста по IP та пошука координат міста
 import {
   getUserLocationByIp,
   searchCities
@@ -65,17 +68,22 @@ import {
   nextTick
 } from 'vue'
 
+//привласнюємо ім'я ключу для зберігання в локалсторадж
 const STORAGE_KEY = 'weatherBlocks'
 
+//читаємо локалсторадж, беремо і розпарсуємо блоки відтіля якщо вони є
 const savedBlocks =
   JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
 
+//створюємо реактивний масив блоків
 const blocks = ref(
+  //якщо є збережені міста - будуємоблоки з них
   savedBlocks.length
     ? savedBlocks.map(city => ({
         id: crypto.randomUUID(),
         defaultCity: city
       }))
+  // якщо не має - створюємо пустий блок
     : [
         {
           id: crypto.randomUUID(),
@@ -84,20 +92,26 @@ const blocks = ref(
       ]
 )
 
-const showModal = ref(false)
-const blockToDelete = ref(null)
-const blocksContainer = ref(null)
 
+const showModal = ref(false) //відображення модалки
+const blockToDelete = ref(null) //айді блока, який хочемо видалити
+const blocksContainer = ref(null) //посилання на DOM-контейнер блоків
+
+//функція додавання нового блока
 const addBlock = async () => {
+  //перевірка, щоб не додати більше 5 блоків
   if (blocks.value.length >= 5) return
 
+  //додаємо пустий блок
   blocks.value.push({
     id: crypto.randomUUID(),
     defaultCity: null
   })
 
+  //чекаємл, доки Vue створить блок
   await nextTick()
 
+  // знаходимо останный доданий блок та шукаэмо в ньому поле інпуту
   const lastBlock =
     blocksContainer.value?.lastElementChild
 
@@ -111,14 +125,17 @@ const addBlock = async () => {
     rect.top >= 0 &&
     rect.bottom <= window.innerHeight
 
+  // якщо поле вводу вже видно - не скролимо до нього
   if (isSearchFieldVisible) return
 
+  // якщо поле вводу не видно - скролимо до нього 
   searchField.scrollIntoView({
     behavior: 'smooth',
     block: 'start'
   })
 }
 
+//функція, яка відкриває модалку після видалення
 const openRemoveModal = (id) => {
   if (blocks.value.length === 1) {
     return
@@ -128,11 +145,13 @@ const openRemoveModal = (id) => {
   showModal.value = true
 }
 
+//функція, яка закриває модалку
 const closeModal = () => {
   showModal.value = false
   blockToDelete.value = null
 }
 
+// яункція, яка підтверджує видалення блоку
 const confirmRemove = () => {
   blocks.value = blocks.value.filter(
     block => block.id !== blockToDelete.value
@@ -142,6 +161,7 @@ const confirmRemove = () => {
   closeModal()
 }
 
+//після завантаження страниці пробуємо знайти погоду користувача по IP
 onMounted(async () => {
   try {
     const locationResponse = await getUserLocationByIp()
@@ -166,7 +186,7 @@ onMounted(async () => {
   }
 })
 
-
+// функція, яка зберігає блоки 
 const saveBlocks = () => {
   const cities = blocks.value
     .filter(block => block.defaultCity)
@@ -178,6 +198,7 @@ const saveBlocks = () => {
   )
 }
 
+//функція, яка виконується, коли користувач обрав місто в блоці
 const updateBlockCity = ({ blockId, city }) => {
   const block = blocks.value.find(
     item => item.id === blockId

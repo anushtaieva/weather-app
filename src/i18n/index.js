@@ -6,6 +6,7 @@ import en from './en.json'
 const savedLocale =
   localStorage.getItem('locale') || 'uk'
 
+//створення об'єкту мультиязичності
 export const i18n = createI18n({
   legacy: false,
   locale: savedLocale,

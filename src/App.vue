@@ -1,3 +1,4 @@
+<!-- головний контейнер всієї апки -->
 <template>
   <div class="container">
     <header class="header">
@@ -33,17 +34,14 @@
 import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+//для роботи з локалізацією
 const { locale } = useI18n()
 
+//намагаємося прочитати тему з локалсторадж
 const theme = ref(
   localStorage.getItem('theme') || 'day'
 )
-
-const changeLocale = value => {
-  locale.value = value
-  localStorage.setItem('locale', value)
-}
-
+//функція, яка змінює тему
 const toggleTheme = () => {
   theme.value = theme.value === 'day'
     ? 'night'
@@ -54,11 +52,14 @@ const toggleTheme = () => {
   document.body.className = theme.value
 }
 
+//функція, яка змінює локалізацію
+const changeLocale = value => {
+  locale.value = value
+  localStorage.setItem('locale', value)
+}
+
+
 onMounted(() => {
   document.body.className = theme.value
 })
 </script>
-
-<style>
-/* Все основные стили вынесены в src/style/weather-app-cute-theme.scss */
-</style>

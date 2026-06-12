@@ -1,4 +1,8 @@
 <template>
+  <!-- контейнер для випадаючого списку
+       двостороння прив'язка даних
+       виклик handleInput() при кожному оновленні інпута
+  -->
   <div class="autocomplete">
     <input
       v-model="query"
@@ -6,10 +10,15 @@
       :placeholder="$t('selectCity')"
     />
 
+    <!-- випадаючий список показуємо, тільки якщо міста є -->
     <ul
       v-if="cities.length"
       class="suggestions"
     >
+    <!-- Vue проходить по масиву і створює <li> для кожного міста
+         Vue використовує key (в якості унікального ключа елемента) для оптимізації рендеру
+         при кліку на місто визивається функція вибору міста
+      -->
       <li
         v-for="city in cities"
         :key="`${city.lat}-${city.lon}`"
@@ -24,17 +33,25 @@
 </template>
 
 <script setup>
+//імпорт для реактивних змінних
 import { ref } from 'vue'
+//імпорт функції пошуку міста
 import { searchCities } from '../api/weatherApi'
+//імпорт для локалізації
 import { useI18n } from 'vue-i18n'
 
+//компонент, який сповіщає батьківський елемент про вибір міста
 const emit = defineEmits(['select'])
 
+//текст інпута
 const query = ref('')
+//перелік міст
 const cities = ref([])
 
+//змінна для debounce
 let timeout = null
 
+//функція пошуку
 const handleInput = () => {
   clearTimeout(timeout)
 
@@ -43,6 +60,7 @@ const handleInput = () => {
     return
   }
 
+  //реалізація debounce (для оптимізації, зменшення запросів на сервер)
   timeout = setTimeout(async () => {
     try {
       const response = await searchCities(query.value)
@@ -53,6 +71,7 @@ const handleInput = () => {
   }, 400)
 }
 
+//функція вибоу міста (збереженні по кліку)
 const selectCity = city => {
   query.value = city.name
   cities.value = []
@@ -61,6 +80,8 @@ const selectCity = city => {
 }
 </script>
 
+
+//стилі
 <style scoped>
 .autocomplete {
   position: relative;
@@ -125,29 +146,5 @@ input:focus {
 
 .suggestions li:hover {
   background: linear-gradient(135deg, rgba(255, 158, 199, 0.18), rgba(128, 216, 255, 0.18));
-}
-</style>
-<style scoped>
-@media (max-width: 520px) {
-  input {
-    min-height: 46px;
-    padding: 0 14px 0 42px;
-    font-size: 15px;
-  }
-
-  .autocomplete::before {
-    left: 15px;
-    top: 12px;
-  }
-
-  .suggestions {
-    max-height: 220px;
-    border-radius: 18px;
-  }
-
-  .suggestions li {
-    padding: 11px 12px;
-    font-size: 14px;
-  }
 }
 </style>
